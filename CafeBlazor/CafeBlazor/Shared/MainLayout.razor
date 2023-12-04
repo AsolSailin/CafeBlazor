@@ -2,18 +2,86 @@
 
 <PageTitle>CafeBlazor</PageTitle>
 
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+<style>
+    .appBar {
+        background-color: #71481c;
+    }
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
-        </div>
+    .logo {
+        width: 70px;
+        height: 70px;
+    }
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+    .title {
+        color: #71481c;
+        margin-top: 8px;
+        margin-left: 10px;
+        font-size: 19px;
+    }
+</style>
+
+<CascadingValue Value="this">
+    <MudLayout Class="back">
+        <MudAppBar Class="appBar">
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer"  />
+                <MudSpacer />
+                <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Target="_blank" />
+                <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" Color="Color.Inherit" Target="_blank" />
+        </MudAppBar>
+        <MudDrawer @bind-Open="@open" Breakpoint="Breakpoint.Xxl" ClipMode="DrawerClipMode.Never" Variant="@DrawerVariant.Responsive">
+            <MudDrawerHeader>
+                <MudImage Src="/images/logo6.png" Class="logo"></MudImage><MudText Class="title">Ресторан "СЕЗОН"</MudText>
+            </MudDrawerHeader>
+
+            <MudNavMenu>
+                <NavMenu @ref="@_navMenu" />
+            </MudNavMenu>
+
+        </MudDrawer>
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.ExtraExtraLarge">
+                @Body
+            </MudContainer>
+        </MudMainContent>
+    </MudLayout>
+</CascadingValue>
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@code {
+    bool open = false;
+    private NavMenu? _navMenu;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private readonly MudTheme _currentTheme = new()
+        {
+            Palette = new PaletteLight
+            {
+                TextSecondary = "#21A77F",
+                TextPrimary = "#21A77F",
+                Primary = "#21A77F",
+                Black = "#000000",
+                White = "#FFFFFF",
+                Secondary = "#00FF00",
+                Tertiary = "#0000FF",
+                Success = "#21A77F",
+                Info = "#FFFF00",
+                Warning = "#FF00FF",
+                Error = "#C0C0C0",
+                Dark = "#333333",
+                Background = "#FFFFFF",
+                PrimaryDarken = "#21A77F"
+            }
+        };
+
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+}

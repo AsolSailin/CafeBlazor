@@ -1,5 +1,113 @@
-﻿<h3>AuthorizationPage</h3>
+﻿@page "/authorization"
+
+@using CafeBlazor.DataBase
+@using CafeBlazor.Services
+@inject CafeSeasonContext CafeContext
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject CurrentElementService CurrentElement
+
+<PageTitle>АВТОРИЗАЦИЯ</PageTitle>
+
+<style>
+    .paper {
+        position: absolute;
+        left: 180px;
+        top: 100px;
+        width: 1000px;
+        height: 550px;
+        box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px;
+        background-color: #fedcb7;
+    }
+
+    .img {
+        width: 400px;
+        height: 400px;
+    }
+
+    .mainLabel {
+        text-align: center;
+        margin-right: 90px;
+        margin-bottom: 30px;
+        font-size: 50px;
+        font-weight: 500;
+        color: #784421;
+        text-decoration: underline;
+        font-family: Andale Mono, monospace;
+    }
+
+    .labelText {
+        font-size: 30px;
+        font-weight: 500;
+        color: #784421;
+        margin-top: 10px;
+        margin-bottom: 5px;
+        margin-left: 7px;
+    }
+</style>
+
+<MudPaper Class="paper">
+    <div class="mainBlock">
+        <div class="imgBlock">
+            <MudImage Src="/images/logo.png" Class="img"></MudImage>
+        </div>
+        <div class="fieldsBlock">
+            <div>
+                <MudText Class="labelText">Логин</MudText>
+                <input @bind-value="login" />
+            </div>
+            <div>
+                <MudText Class="labelText">Пароль</MudText>
+                <input @bind-value="password" />
+            </div>
+            <div class="btnBlock">
+                <button class="btn" onclick="Auth">ВОЙТИ</button>
+            </div>
+        </div>
+    </div>
+</MudPaper>
 
 @code {
+    string login = "";
+    string password = "";
 
+    protected override void OnInitialized()
+    {
+        GetNull();
+        initSnakebarPosition(Defaults.Classes.Position.TopCenter);
+    }
+
+    private void GetNull()
+    {
+        CurrentElement.CurrentAccount = null;
+        CurrentElement.CurrentUser = null;
+        CurrentElement.CurrentRole = null;
+    }
+
+    void initSnakebarPosition(string position)
+    {
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = position;
+    }
+
+    private void Auth()
+    {
+        if (login == "" || password == "")
+        {
+            Snackbar.Add("Для входа в стистему введите логин и пароль!", Severity.Error, config => { config.ShowCloseIcon = false; });
+            return;
+        }
+
+        CurrentElement.CurrentAccount = CafeContext.Accounts.FirstOrDefault(x => x.Login == login && x.Password == password);
+
+        if (CurrentElement.CurrentAccount == null)
+        {
+            Snackbar.Add("Неверные логин или пароль!", Severity.Error, config => { config.ShowCloseIcon = false; });
+            return;
+        }
+
+        CurrentElement.CurrentUser = CafeContext.Users.FirstOrDefault(x => x.Id == CurrentElement.CurrentAccount.UserId);
+        CurrentElement.CurrentRole = CafeContext.Roles.FirstOrDefault(x => x.Id == CurrentElement.CurrentUser.RoleId)?.Title;
+        Navigation.NavigateTo("/account");
+    }
 }

@@ -1,5 +1,221 @@
-﻿<h3>MenuPage</h3>
+﻿@page "/menu"
+
+@using CafeBlazor.DataBase
+@using CafeBlazor.Services;
+@inject CafeSeasonContext CafeContext
+@inject NavigationManager Navigation
+@inject FileSystemService FileSystemService
+@inject ISnackbar Snackbar
+
+<PageTitle>СПИСОК ВОЛЬЕРОВ</PageTitle>
+
+<style>
+    .mainblock {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .titleText {
+        font-size: 25px;
+        font-weight: 500;
+        color: #784421;
+        margin-left: 7px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .labelText {
+        font-size: 23px;
+        font-weight: 500;
+        color: #784421;
+        margin-top: 10px;
+        margin-left: 7px;
+    }
+
+    .avatar {
+        background-color: #d38d5f;
+    }
+
+    .camera {
+        background-color: #784421;
+        left: 130px;
+        bottom: 50px;
+    }
+
+    .fieldsBlock {
+        flex: 50%;
+        margin-left: 50px;
+        height: 400px;
+        width: 300px;
+        overflow-y: scroll;
+    }
+</style>
+
+<div style="position: absolute; left: 190px; width: 1000px;display: flex; flex-direction: row; justify-content: flex-start;">
+    <MudSelect T="string" Label="Категория блюда" Variant="Variant.Outlined" ValueChanged="GetCategoryFilt" Value="currentCategory" Style="font-size: 16px; border: 3px solid #784421; color: #784421; border-radius: 10px; ">
+        @foreach (var category in categories)
+        {
+            <MudSelectItem Value="@(category.Title)" />
+        }
+    </MudSelect>
+    <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px;" OnClick="OpenAddDialog">Добавить блюдо</MudButton>
+</div>
+
+<div style="position:absolute">
+    <MudGrid Spacing="@spacing" Justify="Justify.FlexStart"
+             Style="position: absolute;
+        left: 80px;
+        margin-right: auto;
+        top: 100px;
+        width: 1200px;
+        box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px;
+        border-radius: 30px;
+        background-color: #EEFFF7;
+    }">
+        @foreach (var meal in meals)
+        {
+            <MudItem>
+                <MudPaper Height="270px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #A68EFE; box-shadow: none; border-radius: 20px;">
+                    <a @onclick="() => GetDish(meal)">
+                        <MudPaper Height="270px" Width="260px" Style="border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px; border-radius: 20px;">
+                            <img src="@GetImage(meal)" style="height:200px; width:100%; background-color: #EEFFF7; border-radius: 17px 17px 0 0;" />
+                            <MudText Class="titleText">@meal.Title</MudText>
+                        </MudPaper>
+                    </a>
+                </MudPaper>
+            </MudItem>
+        }
+    </MudGrid>
+</div>
+
+<MudDialog @bind-IsVisible="visible" Options="options" Style="height: 600px;">
+    <TitleContent>
+        <MudText Style="font-size: 30px">
+            Добавление блюда
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="mainblock">
+            <div class="imgBlock">
+                @if (!string.IsNullOrEmpty(mealImage))
+                {
+                    <MudAvatar Style="height:300px; width:300px; font-size:2rem; background-color: white" Image="@imagePath"></MudAvatar>
+                }
+                else
+                {
+                    <MudAvatar Style="height:300px; width:300px; font-size:2rem;" Class="avatar"></MudAvatar>
+                }
+
+                <MudFileUpload T="IBrowserFile" OnFilesChanged="LoadFiles">
+                    <ButtonTemplate>
+                        <MudIconButton HtmlTag="label"
+                                       Icon="@Icons.Material.Filled.PhotoCamera"
+                                       for="@context" Class="camera">
+                        </MudIconButton>
+                    </ButtonTemplate>
+                </MudFileUpload>
+            </div>
+
+            <div class="fieldsBlock">
+                <div>
+                    <MudText Class="labelText">Имя<span style="visibility: @visible"> *</span></MudText>
+                    <input @bind-value="mealTitle" />
+                </div>
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 50px; font-size: 15px; border: 3px solid #784421; color: #784421; margin-right: 7px;" OnClick="Add">Добавить</MudButton>
+    </DialogActions>
+</MudDialog>
 
 @code {
+    private int spacing { get; set; } = 5;
 
+    private List<Meal> meals = new List<Meal>();
+    private List<Category> categories = new List<Category>();
+    private static readonly Category _allCategories = new Category() { Title = "Все" };
+
+    private string currentCategory = "Все";
+
+    private string mealImage = "";
+    private string imagePath = "";
+    private string mealTitle = "";
+
+    private DialogOptions options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
+    private bool visible;
+
+    protected override void OnInitialized()
+    {
+        categories = CafeContext.Categories.ToList();
+        categories.Add(_allCategories);
+        meals = CafeContext.Meals.ToList();
+    }
+
+    private string GetImage(Meal meal) => $"/images/meals/{meal.Image}";
+
+    private void GetDish(Meal meal) => Navigation.NavigateTo($"/meal_page/{meal.Id}");
+
+    private void OpenAddDialog()
+    {
+        GetNull();
+        visible = true;
+    }
+
+    private void GetCategoryFilt(string selected)
+    {
+        currentCategory = selected;
+
+        if (currentCategory == "Все")
+        {
+            meals = CafeContext.Meals.ToList();
+            return;
+        }
+
+        var categoryId = CafeContext.Categories.FirstOrDefault(x => x.Title == currentCategory).Id;
+        meals = CafeContext.Meals.Where(x => x.CategoryId == categoryId).ToList();
+    }
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        foreach (var file in e.GetMultipleFiles(e.FileCount))
+        {
+            Stream stream = file.OpenReadStream(5000000000);
+            await FileSystemService.UploadFileAsync(file.Name, stream, "meal");
+            mealImage = file.Name;
+            await stream.DisposeAsync();
+            imagePath = $"/images/meals/{file.Name}";
+        }
+    }
+
+    private void Add()
+    {
+        if (mealTitle == "")
+        {
+            Snackbar.Add("Для добавления блюда все обязательные поля должны быть заполнены!", Severity.Error, config => { config.ShowCloseIcon = false; });
+            return;
+        }
+
+        var newMeal = new Meal()
+            {
+                Title = mealTitle,
+                IsDeleted = false
+            };
+
+        CafeContext.Meals.Add(newMeal);
+        CafeContext.SaveChanges();
+        CafeContext.ChangeTracker.Clear();
+
+        Snackbar.Add("Блюдо успешно добавлено в меню!", Severity.Success, config => { config.ShowCloseIcon = false; });
+        visible = false;
+        GetNull();
+    }
+
+    private void GetNull()
+    {
+        mealTitle = "";
+    }
 }
+

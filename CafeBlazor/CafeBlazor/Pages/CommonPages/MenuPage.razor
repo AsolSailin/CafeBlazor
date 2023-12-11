@@ -1,13 +1,13 @@
 ﻿@page "/menu"
 
 @using CafeBlazor.DataBase
-@using CafeBlazor.Services;
+@using CafeBlazor.Services
 @inject CafeSeasonContext CafeContext
 @inject NavigationManager Navigation
 @inject FileSystemService FileSystemService
 @inject ISnackbar Snackbar
 
-<PageTitle>СПИСОК ВОЛЬЕРОВ</PageTitle>
+<PageTitle>МЕНЮ</PageTitle>
 
 <style>
     .mainblock {
@@ -72,15 +72,15 @@
         width: 1200px;
         box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px;
         border-radius: 30px;
-        background-color: #EEFFF7;
+        background-color: #fedcb7;
     }">
         @foreach (var meal in meals)
         {
             <MudItem>
-                <MudPaper Height="270px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #A68EFE; box-shadow: none; border-radius: 20px;">
+                <MudPaper Height="270px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #fedcb7; box-shadow: none; border-radius: 20px;">
                     <a @onclick="() => GetDish(meal)">
                         <MudPaper Height="270px" Width="260px" Style="border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px; border-radius: 20px;">
-                            <img src="@GetImage(meal)" style="height:200px; width:100%; background-color: #EEFFF7; border-radius: 17px 17px 0 0;" />
+                            <img src="@GetImage(meal)" style="height:200px; width:100%; background-color: #fedcb7; border-radius: 17px 17px 0 0;" />
                             <MudText Class="titleText">@meal.Title</MudText>
                         </MudPaper>
                     </a>
@@ -101,7 +101,7 @@
             <div class="imgBlock">
                 @if (!string.IsNullOrEmpty(mealImage))
                 {
-                    <MudAvatar Style="height:300px; width:300px; font-size:2rem; background-color: white" Image="@imagePath"></MudAvatar>
+                    <MudAvatar Style="height:300px; width:300px; font-size:2rem; background-color: #fedcb7" Image="@imagePath"></MudAvatar>
                 }
                 else
                 {

@@ -3,6 +3,7 @@
 @using CafeBlazor.DataBase
 @using CafeBlazor.Services
 @inject CafeContext Context
+@inject CurrentElementService CurrentElement
 @inject NavigationManager Navigation
 @inject FileSystemService FileSystemService
 @inject ISnackbar Snackbar
@@ -60,7 +61,10 @@
             <MudSelectItem Value="@(category.Title)" />
         }
     </MudSelect>
-    <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px;" OnClick="OpenAddDialog">Добавить блюдо</MudButton>
+    @if (CurrentElement.CurrentRole == "Администратор") 
+    {
+        <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px; " OnClick="OpenAddDialog">Добавить блюдо</MudButton>
+    }
 </div>
 
 <div style="position:absolute">
@@ -78,7 +82,7 @@
         {
             <MudItem>
                 <MudPaper Height="300px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #fedcb7; box-shadow: none; border-radius: 20px;">
-                    <a @onclick="() => GetDish(meal)">
+                    <a @onclick="() => GetMeal(meal)">
                         <MudPaper Height="300px" Width="260px" Style="border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px; border-radius: 20px;">
                             <img src="@GetImage(meal)" style="height:200px; width:100%; background-color: #fedcb7; border-radius: 17px 17px 0 0;" />
                             <MudText Class="titleText">@meal.Title</MudText>
@@ -154,7 +158,7 @@
 
     private string GetImage(Meal meal) => $"/images/meals/{meal.Image}";
 
-    private void GetDish(Meal meal) => Navigation.NavigateTo($"/meal_page/{meal.Id}");
+    private void GetMeal(Meal meal) => Navigation.NavigateTo($"/meal_page/{meal.Id}");
 
     private void OpenAddDialog()
     {

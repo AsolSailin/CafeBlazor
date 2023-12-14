@@ -2,7 +2,7 @@
 
 @using CafeBlazor.DataBase
 @using CafeBlazor.Services
-@inject CafeSeasonContext CafeContext
+@inject CafeContext Context
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject CurrentElementService CurrentElement
@@ -61,7 +61,7 @@
                 <input @bind-value="password" />
             </div>
             <div class="btnBlock">
-                <button class="btn" onclick="Auth">ВОЙТИ</button>
+                <button class="btn" onclick="@Auth">ВОЙТИ</button>
             </div>
         </div>
     </div>
@@ -98,7 +98,7 @@
             return;
         }
 
-        CurrentElement.CurrentAccount = CafeContext.Accounts.FirstOrDefault(x => x.Login == login && x.Password == password);
+        CurrentElement.CurrentAccount = Context.Accounts.FirstOrDefault(x => x.Login == login && x.Password == password);
 
         if (CurrentElement.CurrentAccount == null)
         {
@@ -106,8 +106,8 @@
             return;
         }
 
-        CurrentElement.CurrentUser = CafeContext.Users.FirstOrDefault(x => x.Id == CurrentElement.CurrentAccount.UserId);
-        CurrentElement.CurrentRole = CafeContext.Roles.FirstOrDefault(x => x.Id == CurrentElement.CurrentUser.RoleId)?.Title;
+        CurrentElement.CurrentUser = Context.Users.FirstOrDefault(x => x.Id == CurrentElement.CurrentAccount.UserId);
+        CurrentElement.CurrentRole = Context.Roles.FirstOrDefault(x => x.Id == CurrentElement.CurrentUser.RoleId)?.Title;
         Navigation.NavigateTo("/account");
     }
 }

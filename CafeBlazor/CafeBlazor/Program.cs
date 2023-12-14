@@ -14,7 +14,7 @@ builder.Services.AddMudServices();
 builder.Services.AddSingleton<CurrentElementService>();
 builder.Services.AddSingleton<FileSystemService>();
 
-builder.Services.AddDbContext<CafeSeasonContext>(options =>
+builder.Services.AddDbContext<CafeContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default"));
     options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);

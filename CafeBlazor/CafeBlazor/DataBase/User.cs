@@ -15,6 +15,8 @@ public partial class User
 
     public int RoleId { get; set; }
 
+    public string? Image { get; set; }
+
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 
     public virtual ICollection<Basket> Baskets { get; set; } = new List<Basket>();

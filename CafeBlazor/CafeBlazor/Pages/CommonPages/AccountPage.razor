@@ -2,7 +2,7 @@
 
 @using CafeBlazor.DataBase
 @using CafeBlazor.Services
-@inject CafeSeasonContext CafeContext
+@inject CafeContext Context
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @inject FileSystemService FileSystemService
@@ -76,15 +76,15 @@
             </div>
             @if (edit)
             {
-                <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 20px; height: 50px; font-size: 16px; border: 3px solid #21A77F; color: #21A77F; margin-right: 20px" OnClick="@GetEdit">Изменить</MudButton>
+                <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 20px; height: 50px; font-size: 16px; border: 3px solid #784421; color: #784421; margin-right: 20px" OnClick="@GetEdit">Изменить</MudButton>
             }
             else
             {
-                <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 20px; height: 50px; font-size: 16px; border: 3px solid #21A77F; color: #21A77F; margin-right: 20px" OnClick="@Edit">Сохранить изменения</MudButton>
+                <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 20px; height: 50px; font-size: 16px; border: 3px solid #784421; color: #784421; margin-right: 20px" OnClick="@Edit">Сохранить изменения</MudButton>
             }
         </div>
         <div class="imgBlock">
-            <MudAvatar Style="height:400px; width:400px; background-color: #EEFFF7; border: 3px solid #21A77F; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px;" Image="@imagePath"></MudAvatar>
+            <MudAvatar Style="height:400px; width:400px; background-color: #d38d5f; border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px;" Image="@imagePath"></MudAvatar>
             <MudFileUpload T="IBrowserFile" OnFilesChanged="LoadFiles">
                 <ButtonTemplate>
                     <MudIconButton HtmlTag="label"
@@ -128,8 +128,8 @@
         patronymic = CurrentElement.CurrentUser.Patronymic;
         login = CurrentElement.CurrentAccount.Login;
         password = CurrentElement.CurrentAccount.Password;
-        //userImage = CurrentElement.CurrentUser.Image;
-        //imagePath = $"/images/users/{CurrentElement.CurrentUser.Image}";
+        userImage = CurrentElement.CurrentUser.Image;
+        imagePath = $"/images/users/{CurrentElement.CurrentUser.Image}";
     }
 
     private void GetData()
@@ -139,7 +139,7 @@
         CurrentElement.CurrentUser.Patronymic = patronymic;
         CurrentElement.CurrentAccount.Login = login;
         CurrentElement.CurrentAccount.Password = password;
-        //CurrentElement.CurrentUser.Image = userImage;
+        CurrentElement.CurrentUser.Image = userImage;
     }
 
     private async Task LoadFiles(InputFileChangeEventArgs e)
@@ -166,10 +166,10 @@
         }
 
         GetData();
-        CafeContext.Users.Update(CurrentElement.CurrentUser);
-        CafeContext.Accounts.Update(CurrentElement.CurrentAccount);
-        CafeContext.SaveChanges();
-        CafeContext.ChangeTracker.Clear();
+        Context.Users.Update(CurrentElement.CurrentUser);
+        Context.Accounts.Update(CurrentElement.CurrentAccount);
+        Context.SaveChanges();
+        Context.ChangeTracker.Clear();
         Snackbar.Add("Изменения аккаунта успешно сохранены!", Severity.Success, config => { config.ShowCloseIcon = false; });
         visible = "hidden";
         edit = true;

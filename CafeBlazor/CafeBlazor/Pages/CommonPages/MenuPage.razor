@@ -2,7 +2,7 @@
 
 @using CafeBlazor.DataBase
 @using CafeBlazor.Services
-@inject CafeSeasonContext CafeContext
+@inject CafeContext Context
 @inject NavigationManager Navigation
 @inject FileSystemService FileSystemService
 @inject ISnackbar Snackbar
@@ -23,7 +23,7 @@
         color: #784421;
         margin-left: 7px;
         text-align: center;
-        vertical-align: middle;
+        vertical-align: middle; 
     }
 
     .labelText {
@@ -77,9 +77,9 @@
         @foreach (var meal in meals)
         {
             <MudItem>
-                <MudPaper Height="270px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #fedcb7; box-shadow: none; border-radius: 20px;">
+                <MudPaper Height="300px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #fedcb7; box-shadow: none; border-radius: 20px;">
                     <a @onclick="() => GetDish(meal)">
-                        <MudPaper Height="270px" Width="260px" Style="border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px; border-radius: 20px;">
+                        <MudPaper Height="300px" Width="260px" Style="border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px; border-radius: 20px;">
                             <img src="@GetImage(meal)" style="height:200px; width:100%; background-color: #fedcb7; border-radius: 17px 17px 0 0;" />
                             <MudText Class="titleText">@meal.Title</MudText>
                         </MudPaper>
@@ -136,10 +136,8 @@
 
     private List<Meal> meals = new List<Meal>();
     private List<Category> categories = new List<Category>();
-    private static readonly Category _allCategories = new Category() { Title = "Все" };
 
-    private string currentCategory = "Все";
-
+    private string currentCategory = "";
     private string mealImage = "";
     private string imagePath = "";
     private string mealTitle = "";
@@ -149,9 +147,9 @@
 
     protected override void OnInitialized()
     {
-        categories = CafeContext.Categories.ToList();
-        categories.Add(_allCategories);
-        meals = CafeContext.Meals.ToList();
+        categories = Context.Categories.ToList();
+        currentCategory = categories[0].Title;
+        GetCategoryFilt(currentCategory);
     }
 
     private string GetImage(Meal meal) => $"/images/meals/{meal.Image}";
@@ -167,15 +165,8 @@
     private void GetCategoryFilt(string selected)
     {
         currentCategory = selected;
-
-        if (currentCategory == "Все")
-        {
-            meals = CafeContext.Meals.ToList();
-            return;
-        }
-
-        var categoryId = CafeContext.Categories.FirstOrDefault(x => x.Title == currentCategory).Id;
-        meals = CafeContext.Meals.Where(x => x.CategoryId == categoryId).ToList();
+        var categoryId = Context.Categories.FirstOrDefault(x => x.Title == currentCategory).Id;
+        meals = Context.Meals.Where(x => x.CategoryId == categoryId).ToList();
     }
 
     private async Task LoadFiles(InputFileChangeEventArgs e)
@@ -204,9 +195,9 @@
                 IsDeleted = false
             };
 
-        CafeContext.Meals.Add(newMeal);
-        CafeContext.SaveChanges();
-        CafeContext.ChangeTracker.Clear();
+        Context.Meals.Add(newMeal);
+        Context.SaveChanges();
+        Context.ChangeTracker.Clear();
 
         Snackbar.Add("Блюдо успешно добавлено в меню!", Severity.Success, config => { config.ShowCloseIcon = false; });
         visible = false;

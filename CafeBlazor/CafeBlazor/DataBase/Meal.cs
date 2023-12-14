@@ -19,6 +19,8 @@ public partial class Meal
 
     public int? CategoryId { get; set; }
 
+    public int? Weight { get; set; }
+
     public virtual ICollection<Basket> Baskets { get; set; } = new List<Basket>();
 
     public virtual Category? Category { get; set; }

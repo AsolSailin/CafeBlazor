@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@using CafeBlazor.Services
+@inject CurrentElementService CurrentElement
+@inject NavigationManager Navigation
 
 <PageTitle>CafeBlazor</PageTitle>
 
@@ -23,10 +26,13 @@
 <CascadingValue Value="this">
     <MudLayout Class="back">
         <MudAppBar Class="appBar">
-            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer"  />
+            @if (CurrentElement.CurrentUser != null)
+            {
+                <MudIconButton Icon="@Icons.Material.Filled.Menu" Style="color:#fedcb7"  Edge="Edge.Start" OnClick="@ToggleDrawer" />
                 <MudSpacer />
-                <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" Target="_blank" />
-                <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" Color="Color.Inherit" Target="_blank" />
+                <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Style="color:#fedcb7" OnClick="GetAccount" Target="_blank" />
+                <MudIconButton Icon="@Icons.Material.Filled.ExitToApp" Style="color:#fedcb7" OnClick="Exit" Target="_blank" />
+            }
         </MudAppBar>
         <MudDrawer @bind-Open="@open" Breakpoint="Breakpoint.Xxl" ClipMode="DrawerClipMode.Never" Variant="@DrawerVariant.Responsive">
             <MudDrawerHeader>
@@ -46,8 +52,13 @@
     </MudLayout>
 </CascadingValue>
 
-<MudThemeProvider />
-<MudDialogProvider />
+<MudThemeProvider Theme="_currentTheme" />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraSmall"
+                   CloseButton="true"
+                   DisableBackdropClick="true"
+                   Position="DialogPosition.Center"
+                   CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 
 @code {
@@ -57,6 +68,14 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void GetAccount() => Navigation.NavigateTo("/account");
+
+    private void Exit()
+    {
+        CurrentElement.CurrentUser = null;
+        Navigation.NavigateTo("/authorization");
     }
 
     private readonly MudTheme _currentTheme = new()
@@ -70,10 +89,10 @@
                 White = "#FFFFFF",
                 Secondary = "#00FF00",
                 Tertiary = "#0000FF",
-                Success = "#784421",
+                Success = "#d38d5f",
                 Info = "#FFFF00",
                 Warning = "#FF00FF",
-                Error = "#C0C0C0",
+                Error = "#f57c7c",
                 Dark = "#333333",
                 Background = "#FFFFFF",
                 PrimaryDarken = "#784421"

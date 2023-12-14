@@ -17,7 +17,7 @@
                     break;
             }
 
-            using var fs = new FileStream(path, FileMode.Create);
+        using var fs = new FileStream(path, FileMode.Create);
             await stream.CopyToAsync(fs);
         }
     }

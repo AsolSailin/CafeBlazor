@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CafeBlazor.DataBase;
 
-public partial class CafeSeasonContext : DbContext
+public partial class CafeContext : DbContext
 {
-    public CafeSeasonContext()
+    public CafeContext()
     {
     }
 
-    public CafeSeasonContext(DbContextOptions<CafeSeasonContext> options)
+    public CafeContext(DbContextOptions<CafeContext> options)
         : base(options)
     {
     }
@@ -34,7 +34,8 @@ public partial class CafeSeasonContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=LAPTOP-80QITHSR\\SQLEXPRES;Initial Catalog=CafeSeason;Integrated Security=True; TrustServerCertificate=True");
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Data Source=LAPTOP-80QITHSR\\SQLEXPRES;Initial Catalog=Cafe;Integrated Security=True; TrustServerCertificate=True");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -42,7 +43,6 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("Account");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Login)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -61,7 +61,6 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("Basket");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.MealId).HasColumnName("Meal_Id");
             entity.Property(e => e.UserId).HasColumnName("User_Id");
 
@@ -90,7 +89,6 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("Meal");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.CategoryId).HasColumnName("Category_Id");
             entity.Property(e => e.Description)
                 .HasMaxLength(150)
@@ -111,7 +109,6 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("MealOrder");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.MealId).HasColumnName("Meal_Id");
             entity.Property(e => e.OrderId).HasColumnName("Order_Id");
 
@@ -130,7 +127,6 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("Order");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.ReadyTime).HasColumnType("date");
             entity.Property(e => e.StatusId).HasColumnName("Status_Id");
             entity.Property(e => e.UserId).HasColumnName("User_Id");
@@ -150,7 +146,6 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("OrderStatus");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -160,7 +155,6 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("Role");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
             entity.Property(e => e.Title)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -170,7 +164,9 @@ public partial class CafeSeasonContext : DbContext
         {
             entity.ToTable("User");
 
-            entity.Property(e => e.Id).ValueGeneratedNever();
+            entity.Property(e => e.Image)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .IsUnicode(false);

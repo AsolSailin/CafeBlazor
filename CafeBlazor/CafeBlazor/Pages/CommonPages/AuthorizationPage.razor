@@ -43,6 +43,29 @@
         margin-top: 10px;
         margin-bottom: 5px;
         margin-left: 7px;
+        cursor: default;
+    }
+
+    .box-content {
+        width: 100%;
+        height: 100%;
+    }
+
+    .box-content-row {
+        display: flex;
+        flex-direction: column;
+        margin-top: 10px;
+    }
+
+    .box-horizontal {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .href{
+        cursor: pointer;
+        text-decoration: underline;
     }
 </style>
 
@@ -54,28 +77,88 @@
         <div class="fieldsBlock">
             <div>
                 <MudText Class="labelText">Логин</MudText>
-                <input @bind-value="login" />
+                <input @bind-value="authLogin" />
             </div>
             <div>
                 <MudText Class="labelText">Пароль</MudText>
-                <input @bind-value="password" />
+                <input @bind-value="authPassword" />
             </div>
             <div class="btnBlock">
                 <button class="btn" onclick="@Auth">ВОЙТИ</button>
+                <p style="cursor: default; margin-top: 7px; color: #d38d5f; font-size: 13px;">Нет аккаунта? <NavLink class="href" onclick="@GetReg">Зарегистрируйся</NavLink></p>
             </div>
         </div>
     </div>
 </MudPaper>
 
+<MudDialog Class="content" @bind-IsVisible="visible" Options="options" Style="height: 600px;">
+    <TitleContent>
+        <MudText Style="font-size: 30px">
+            Регистрация
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <div class="box-content">
+            <div class="box-content-row">
+                <div class="box-horizontal">
+                    <p style="font-size: 20px;">Фамилия: <span class="required"> *</span></p>
+                </div>
+                <MudTextField @bind-Value="surname" Variant="Variant.Outlined" />
+            </div>
+
+            <div class="box-content-row">
+                <div class="box-horizontal">
+                    <p style="font-size: 20px;">Имя:<span class="required"> *</span></p>
+                </div>
+                <MudTextField @bind-Value="name" Variant="Variant.Outlined" />
+            </div>
+
+            <div class="box-content-row">
+                <div class="box-horizontal">
+                    <p style="font-size: 20px;">Отчество:</p>
+                </div>
+                <MudTextField @bind-Value="patronymic" Variant="Variant.Outlined" />
+            </div>
+
+            <div class="box-content-row">
+                <div class="box-horizontal">
+                    <p style="font-size: 20px;">Логин:<span class="required"> *</span></p>
+                </div>
+                <MudTextField @bind-Value="login" Variant="Variant.Outlined" />
+            </div>
+
+            <div class="box-content-row">
+                <div class="box-horizontal">
+                    <p style="font-size: 20px;">Пароль:<span class="required"> *</span></p>
+                </div>
+                <MudTextField @bind-Value="password" Variant="Variant.Outlined" />
+            </div>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 50px; font-size: 15px; border: 3px solid #784421; color: #784421; margin-right: 7px;" OnClick="@Reg">Подтвердить</MudButton>
+    </DialogActions>
+</MudDialog>
+
 @code {
+    string authLogin = "";
+    string authPassword = "";
     string login = "";
     string password = "";
+    string surname = "";
+    string name = "";
+    string patronymic = "";
+
+    private DialogOptions options = new DialogOptions { CloseOnEscapeKey = true };
+    private bool visible;
 
     protected override void OnInitialized()
     {
         GetNull();
         initSnakebarPosition(Defaults.Classes.Position.TopCenter);
     }
+
+    private void GetReg() => visible = true;
 
     private void GetNull()
     {
@@ -92,13 +175,13 @@
 
     private void Auth()
     {
-        if (login == "" || password == "")
+        if (authLogin == "" || authPassword == "")
         {
             Snackbar.Add("Для входа в стистему введите логин и пароль!", Severity.Error, config => { config.ShowCloseIcon = false; });
             return;
         }
 
-        CurrentElement.CurrentAccount = Context.Accounts.FirstOrDefault(x => x.Login == login && x.Password == password);
+        CurrentElement.CurrentAccount = Context.Accounts.FirstOrDefault(x => x.Login == authLogin && x.Password == authPassword);
 
         if (CurrentElement.CurrentAccount == null)
         {
@@ -109,5 +192,43 @@
         CurrentElement.CurrentUser = Context.Users.FirstOrDefault(x => x.Id == CurrentElement.CurrentAccount.UserId);
         CurrentElement.CurrentRole = Context.Roles.FirstOrDefault(x => x.Id == CurrentElement.CurrentUser.RoleId)?.Title;
         Navigation.NavigateTo("/account");
+    }
+
+    private void Reg()
+    {
+        if (surname == "" || name == "" || patronymic == "" || login == "" || password == "")
+        {
+            Snackbar.Add("Для завершения регистрации все обязательные поля должны быть заполнены!", Severity.Error, config => { config.ShowCloseIcon = false; });
+            return;
+        }
+
+        if (Context.Accounts.FirstOrDefault(x => x.Login == login) != null)
+        {
+            Snackbar.Add("Пользователь с таким логином уже существует!", Severity.Error, config => { config.ShowCloseIcon = false; });
+            return;
+        }
+
+        User newUser = new User()
+        {
+            Surname = surname,
+            Name = name,
+            Patronymic = patronymic,
+            RoleId = 2
+        };
+
+        Account newAccount = new Account()
+        {
+            Login = login,
+            Password = password
+        };
+
+        newUser.Accounts.Add(newAccount);
+        Context.Users.Add(newUser);
+        Context.Accounts.Add(newAccount);
+        Context.SaveChanges();
+        Context.ChangeTracker.Clear();
+        Snackbar.Add("Вы были зарегистрированы", Severity.Success, config => { config.ShowCloseIcon = false; });
+        Snackbar.Add("Для начала работы в приложении необходимо авторизоваться", Severity.Success, config => { config.ShowCloseIcon = false; });
+        visible = false;
     }
 }

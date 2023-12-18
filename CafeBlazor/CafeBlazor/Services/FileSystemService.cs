@@ -10,7 +10,7 @@
             switch (animalOrEmployee)
             {
                 case "meal":
-                    path = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\images\meal", name);
+                    path = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\images\meals", name);
                     break;
                 case "user":
                     path = Path.Combine(Directory.GetCurrentDirectory(), @"wwwroot\images\users", name);

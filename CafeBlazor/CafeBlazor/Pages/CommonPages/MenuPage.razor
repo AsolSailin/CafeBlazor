@@ -123,9 +123,44 @@
             </div>
 
             <div class="fieldsBlock">
-                <div>
-                    <MudText Class="labelText">Имя<span style="visibility: @visible"> *</span></MudText>
-                    <input @bind-value="mealTitle" />
+                <div class="box-content-row">
+                    <div class="box-horizontal">
+                        <MudText style="font-size: 20px;">Название: <span class="required"> *</span></MudText>
+                    </div>
+                    <MudTextField @bind-Value="mealTitle" Variant="Variant.Outlined" />
+                </div>
+
+                <div class="box-content-row">
+                    <div class="box-horizontal">
+                        <MudText style="font-size: 20px;">Цена: <span class="required"> *</span></MudText>
+                    </div>
+                    <MudTextField @bind-Value="mealCost" Variant="Variant.Outlined" />
+                </div>
+
+                <div class="box-content-row">
+                    <div class="box-horizontal">
+                        <MudText style="font-size: 20px;">Вес: </MudText>
+                    </div>
+                    <MudTextField @bind-Value="mealWeigth" Variant="Variant.Outlined" />
+                </div>
+
+                <div class="box-content-row">
+                    <div class="box-horizontal">
+                        <MudText style="font-size: 20px;">Описание: </MudText>
+                    </div>
+                    <MudTextField @bind-Value="mealDescription" Variant="Variant.Outlined" />
+                </div>
+
+                <div class="box-content-row">
+                    <div class="box-horizontal">
+                        <MudText style="font-size: 20px;">Категория блюда: <span class="required"> *</span></MudText>
+                    </div>
+                    <MudSelect Dense="true" T="string" Variant="Variant.Outlined" @bind-Value="mealCategory">
+                        @foreach (var category in categories)
+                        {
+                            <MudSelectItem T="string" Value="@(category.Title)" />
+                        }
+                    </MudSelect>
                 </div>
             </div>
         </div>
@@ -145,6 +180,10 @@
     private string mealImage = "";
     private string imagePath = "";
     private string mealTitle = "";
+    private string mealCost = "";
+    private string mealWeigth = "";
+    private string mealDescription = "";
+    private string mealCategory = "";
 
     private DialogOptions options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Medium, FullWidth = true };
     private bool visible;
@@ -187,8 +226,8 @@
 
     private void Add()
     {
-        if (mealTitle == "")
-        {
+        if (mealTitle == "" || mealCost == "" || mealWeigth == "" || mealDescription == "" || mealCategory == "" )
+    {
             Snackbar.Add("Для добавления блюда все обязательные поля должны быть заполнены!", Severity.Error, config => { config.ShowCloseIcon = false; });
             return;
         }
@@ -196,6 +235,11 @@
         var newMeal = new Meal()
             {
                 Title = mealTitle,
+                Cost = int.Parse(mealCost),
+                Weight = int.Parse(mealWeigth),
+                Description = mealDescription,
+                CategoryId = Context.Categories.FirstOrDefault(x => x.Title == mealCategory).Id,
+                Image = mealImage,
                 IsDeleted = false
             };
 
@@ -211,6 +255,10 @@
     private void GetNull()
     {
         mealTitle = "";
+        mealCost = "";
+        mealWeigth = "";
+        mealDescription = "";
+        mealCategory = "";
     }
 }
 

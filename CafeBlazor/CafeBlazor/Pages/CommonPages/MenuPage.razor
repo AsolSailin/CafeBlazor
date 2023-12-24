@@ -55,7 +55,7 @@
 </style>
 
 <div style="position: absolute; left: 190px; width: 1000px;display: flex; flex-direction: row; justify-content: flex-start;">
-    <MudSelect T="string" Label="Категория блюда" Variant="Variant.Outlined" ValueChanged="GetCategoryFilt" Value="currentCategory" Style="font-size: 16px; border: 3px solid #784421; color: #784421; border-radius: 10px; ">
+    <MudSelect T="string" Label="Категория блюда" Variant="Variant.Outlined" ValueChanged="GetCategoryFilt" Value="CurrentElement.CurrentMealCategory" Style="font-size: 16px; border: 3px solid #784421; color: #784421; border-radius: 10px; ">
         @foreach (var category in categories)
         {
             <MudSelectItem Value="@(category.Title)" />
@@ -81,11 +81,20 @@
         @foreach (var meal in meals)
         {
             <MudItem>
-                <MudPaper Height="300px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #fedcb7; box-shadow: none; border-radius: 20px;">
+                <MudPaper Height="330px" Width="260px" Class="d-flex align-center justify-center mud-width-full py-8" Style="background-color: #fedcb7; box-shadow: none; border-radius: 20px;">
                     <a @onclick="() => GetMeal(meal)">
-                        <MudPaper Height="300px" Width="260px" Style="border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px; border-radius: 20px;">
-                            <img src="@GetImage(meal)" style="height:200px; width:100%; background-color: #fedcb7; border-radius: 17px 17px 0 0;" />
+                        <MudPaper Height="330px" Width="260px" Style="border: 3px solid #784421; box-shadow: rgb(38, 57, 77) 0px 5px 10px -0px; border-radius: 20px;">
+                            @if (meal.Image != null)
+                            {
+                                <img src="@GetImage(meal)" style="height:200px; width:100%; background-color: #fedcb7; border-radius: 17px 17px 0 0;" />
+                            }
+                            else
+                            {
+                                <img src="/images/logo.png" style="height:200px; width:100%; background-color: #fedcb7; border-radius: 17px 17px 0 0;" />
+                            }
+                            
                             <MudText Class="titleText">@meal.Title</MudText>
+                            <MudText Class="titleText">@meal.Cost руб.</MudText>
                         </MudPaper>
                     </a>
                 </MudPaper>
@@ -109,7 +118,7 @@
                 }
                 else
                 {
-                    <MudAvatar Style="height:300px; width:300px; font-size:2rem;" Class="avatar"></MudAvatar>
+                    <MudAvatar Style="height:300px; width:300px; font-size:2rem;" Class="avatar" ></MudAvatar>
                 }
 
                 <MudFileUpload T="IBrowserFile" OnFilesChanged="LoadFiles">
@@ -134,14 +143,14 @@
                     <div class="box-horizontal">
                         <MudText style="font-size: 20px;">Цена: <span class="required"> *</span></MudText>
                     </div>
-                    <MudTextField @bind-Value="mealCost" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="mealCost" Variant="Variant.Outlined" HelperText="необходимо ввести только число" />
                 </div>
 
                 <div class="box-content-row">
                     <div class="box-horizontal">
                         <MudText style="font-size: 20px;">Вес: </MudText>
                     </div>
-                    <MudTextField @bind-Value="mealWeigth" Variant="Variant.Outlined" />
+                    <MudTextField @bind-Value="mealWeigth" Variant="Variant.Outlined" HelperText="необходимо ввести только число" />
                 </div>
 
                 <div class="box-content-row">
@@ -176,7 +185,6 @@
     private List<Meal> meals = new List<Meal>();
     private List<Category> categories = new List<Category>();
 
-    private string currentCategory = "";
     private string mealImage = "";
     private string imagePath = "";
     private string mealTitle = "";
@@ -191,8 +199,11 @@
     protected override void OnInitialized()
     {
         categories = Context.Categories.ToList();
-        currentCategory = categories[0].Title;
-        GetCategoryFilt(currentCategory);
+        if (CurrentElement.CurrentMealCategory == null)
+        {
+            CurrentElement.CurrentMealCategory = categories[0].Title;
+        }
+        GetCategoryFilt(CurrentElement.CurrentMealCategory);
     }
 
     private string GetImage(Meal meal) => $"/images/meals/{meal.Image}";
@@ -207,8 +218,8 @@
 
     private void GetCategoryFilt(string selected)
     {
-        currentCategory = selected;
-        var categoryId = Context.Categories.FirstOrDefault(x => x.Title == currentCategory).Id;
+        CurrentElement.CurrentMealCategory = selected;
+        var categoryId = Context.Categories.FirstOrDefault(x => x.Title == CurrentElement.CurrentMealCategory).Id;
         meals = Context.Meals.Where(x => x.CategoryId == categoryId).ToList();
     }
 
@@ -226,30 +237,37 @@
 
     private void Add()
     {
-        if (mealTitle == "" || mealCost == "" || mealWeigth == "" || mealDescription == "" || mealCategory == "" )
-    {
-            Snackbar.Add("Для добавления блюда все обязательные поля должны быть заполнены!", Severity.Error, config => { config.ShowCloseIcon = false; });
-            return;
-        }
-
-        var newMeal = new Meal()
+        try
+        {
+            if (mealTitle == "" || mealCost == "" || mealWeigth == "" || mealDescription == "" || mealCategory == "")
             {
-                Title = mealTitle,
-                Cost = int.Parse(mealCost),
-                Weight = int.Parse(mealWeigth),
-                Description = mealDescription,
-                CategoryId = Context.Categories.FirstOrDefault(x => x.Title == mealCategory).Id,
-                Image = mealImage,
-                IsDeleted = false
-            };
+                Snackbar.Add("Для добавления блюда все обязательные поля должны быть заполнены!", Severity.Error, config => { config.ShowCloseIcon = false; });
+                return;
+            }
 
-        Context.Meals.Add(newMeal);
-        Context.SaveChanges();
-        Context.ChangeTracker.Clear();
+            var newMeal = new Meal()
+                {
+                    Title = mealTitle,
+                    Cost = int.Parse(mealCost),
+                    Weight = int.Parse(mealWeigth),
+                    Description = mealDescription,
+                    CategoryId = Context.Categories.FirstOrDefault(x => x.Title == mealCategory).Id,
+                    Image = mealImage,
+                    IsDeleted = false
+                };
 
-        Snackbar.Add("Блюдо успешно добавлено в меню!", Severity.Success, config => { config.ShowCloseIcon = false; });
-        visible = false;
-        GetNull();
+            Context.Meals.Add(newMeal);
+            Context.SaveChanges();
+            Context.ChangeTracker.Clear();
+
+            Snackbar.Add("Блюдо успешно добавлено в меню!", Severity.Success, config => { config.ShowCloseIcon = false; });
+            visible = false;
+            GetNull();
+        }
+        catch
+        {
+            Snackbar.Add("Ошибка данных! Некоторые поля заполнены некорректно!", Severity.Error, config => { config.ShowCloseIcon = false; });
+        }
     }
 
     private void GetNull()
@@ -259,6 +277,6 @@
         mealWeigth = "";
         mealDescription = "";
         mealCategory = "";
+        mealImage = "";
     }
 }
-

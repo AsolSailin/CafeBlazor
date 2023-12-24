@@ -1,7 +1,17 @@
-﻿<MudDialog>
+﻿@using CafeBlazor.Services
+@inject ActionDialogService Action
+
+<MudDialog>
     <DialogActions>
         <MudButton Style="margin-top: 0px;" OnClick="Cancel">Отменить</MudButton>
-        <MudButton Style="margin-top: 0px; color: #658dc3; " Color="Color.Primary" OnClick="Submit">Удалить</MudButton>
+        @if (Action.CurrentAction)
+        {
+            <MudButton Style="margin-top: 0px; color: #784421; " Color="Color.Primary" OnClick="Submit">Выйти</MudButton>
+        }
+        else
+        {
+            <MudButton Style="margin-top: 0px; color: #784421; " Color="Color.Primary" OnClick="Submit">Удалить</MudButton>
+        }
     </DialogActions>
 </MudDialog>
 

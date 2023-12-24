@@ -2,6 +2,7 @@
 
 @using CafeBlazor.DataBase
 @using CafeBlazor.Services
+@using CafeBlazor.Components
 @inject CafeContext Context
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
@@ -189,9 +190,15 @@
             return;
         }
 
+        if (CurrentElement.CurrentAccount.IsDeleted)
+        {
+            Snackbar.Add("Аккаунт был удален! Необходимо создать новый аккаунт", Severity.Error, config => { config.ShowCloseIcon = false; });
+            return;
+        }
+
         CurrentElement.CurrentUser = Context.Users.FirstOrDefault(x => x.Id == CurrentElement.CurrentAccount.UserId);
         CurrentElement.CurrentRole = Context.Roles.FirstOrDefault(x => x.Id == CurrentElement.CurrentUser.RoleId)?.Title;
-        Navigation.NavigateTo("/account");
+        Navigation.NavigateTo("/menu");
     }
 
     private void Reg()
@@ -219,7 +226,8 @@
         Account newAccount = new Account()
         {
             Login = login,
-            Password = password
+            Password = password,
+            IsDeleted = false
         };
 
         newUser.Accounts.Add(newAccount);

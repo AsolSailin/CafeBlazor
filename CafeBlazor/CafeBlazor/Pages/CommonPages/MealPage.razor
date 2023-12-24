@@ -3,6 +3,8 @@
 @using CafeBlazor.DataBase
 @using CafeBlazor.Services
 @using CafeBlazor.Components
+@inject CurrentElementService CurrentElement
+@inject ActionDialogService Action
 @inject CafeContext Context
 @inject NavigationManager Navigation
 @inject FileSystemService FileSystemService
@@ -69,14 +71,21 @@
 
 <MudPaper Class="paper">
     <div style="display:flex; flex-direction: row;">
-        <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px; margin-right:5px;" OnClick="@Delete">Удалить</MudButton>
-        @if (edit)
+        @if (CurrentElement.CurrentRole == "Клиент")
         {
-            <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px;" OnClick="@GetEdit">Изменить</MudButton>
+            <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px;" OnClick="@Buy">В корзину</MudButton>
         }
-        else
+        else if (CurrentElement.CurrentRole == "Администратор")
         {
-            <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px;" OnClick="@Edit">Сохранить изменения</MudButton>
+            <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px; margin-right:5px;" OnClick="@Delete">Удалить</MudButton>
+            @if (edit)
+            {
+                <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px;" OnClick="@GetEdit">Изменить</MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 6px; height: 63px; font-size: 16px; border: 3px solid #784421; color: #784421; left:7px;" OnClick="@Edit">Сохранить изменения</MudButton>
+            }            
         }
     </div>
     <div class="mainBlock">
@@ -93,8 +102,28 @@
         </div>
         <div class="fieldsBlock">
             <div>
-                <MudText Class="labelText">Название блюда<span style="visibility: @visible"> *</span></MudText>
+                <MudText style="font-size: 20px;">Название: <span style="visibility: @visible"> *</span></MudText>
                 <input @bind-value="mealTitle" readonly="@edit" />
+            </div>
+
+            <div>
+                <MudText style="font-size: 20px;">Цена: <span style="visibility: @visible"> *</span></MudText>
+                <input @bind-value="mealCost" readonly="@edit" />
+            </div>
+
+            <div>
+                    <MudText style="font-size: 20px;">Вес: </MudText>
+                <input @bind-value="mealWeigth" readonly="@edit" />
+            </div>
+
+            <div>
+                <MudText style="font-size: 20px;">Описание: </MudText>
+                <input @bind-value="mealDescription" readonly="@edit" />
+            </div>
+
+            <div >
+                <MudText style="font-size: 20px;">Категория блюда:</MudText>
+                <input @bind-value="mealCategory" readonly="true" />
             </div>
         </div>
     </div>
@@ -106,12 +135,13 @@
 
     private Meal currentMeal = new Meal();
 
-    private string mealTitle = "";
-    private string mealDescription = "";
-    private string mealWeight = "";
-    private string mealCategory = "";
     private string mealImage = "";
     private string imagePath = "";
+    private string mealTitle = "";
+    private string mealCost = "";
+    private string mealWeigth = "";
+    private string mealDescription = "";
+    private string mealCategory = "";
 
     private string visible = "hidden";
 
@@ -132,8 +162,9 @@
     private void GetFields()
     {
         mealTitle = currentMeal.Title;
+        mealCost = currentMeal.Cost.ToString();
         mealDescription = currentMeal.Description;
-        mealWeight = currentMeal.Weight.ToString();
+        mealWeigth = currentMeal.Weight.ToString();
         mealImage = currentMeal.Image;
         mealCategory = Context.Categories.FirstOrDefault(x => x.Id == currentMeal.CategoryId).Title;
         imagePath = $"/images/meals/{currentMeal.Image}";
@@ -142,8 +173,9 @@
     private void GetData()
     {
         currentMeal.Title = mealTitle;
+        currentMeal.Cost = int.Parse(mealCost);
         currentMeal.Description = mealDescription;
-        currentMeal.Weight = int.Parse(mealWeight);
+        currentMeal.Weight = int.Parse(mealWeigth);
         currentMeal.Image = mealImage;
         currentMeal.CategoryId = Context.Categories.FirstOrDefault(x => x.Title == mealCategory).Id;
     }
@@ -162,6 +194,7 @@
 
     private async Task Delete()
     {
+        Action.CurrentAction = false;
         var result = await DialogService.Show<ActionDialog>($"Вы уверены, что хотите удалить это блюдо из меню?").Result;
 
         if (!result.Canceled)
@@ -189,6 +222,29 @@
         Snackbar.Add("Данные блюда успешно изменены!", Severity.Success, config => { config.ShowCloseIcon = false; });
         visible = "hidden";
         edit = true;
+    }
+
+    private void Buy()
+    {
+        try
+        {
+            var newBasket = new Basket()
+                {
+                    Count = 1,
+                    MealId = currentMeal.Id,
+                    UserId = CurrentElement.CurrentUser.Id
+                };
+
+            Context.Baskets.Add(newBasket);
+            Context.SaveChanges();
+            Context.ChangeTracker.Clear();
+            Snackbar.Add("Товар добавлен в корзину", Severity.Success, config => { config.ShowCloseIcon = false; });
+            Navigation.NavigateTo($"/menu");
+        }
+        catch
+        {
+            Snackbar.Add("Ошибка данных!", Severity.Error, config => { config.ShowCloseIcon = false; });
+        }
     }
 }
 

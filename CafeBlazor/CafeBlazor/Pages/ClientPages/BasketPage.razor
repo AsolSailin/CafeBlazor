@@ -5,6 +5,7 @@
 @using CafeBlazor.Services
 @using CafeBlazor.Components
 @inject CurrentElementService CurrentElement
+@inject ActionDialogService Action
 @inject CafeContext Context
 @inject NavigationManager Navigation
 @inject IDialogService DialogService
@@ -154,6 +155,7 @@
 
         if (basket.Count == 1)
         {
+            Action.CurrentAction = false;
             var result = await DialogService.Show<ActionDialog>($"Вы уверены, что хотите удалить это блюдо из корзины?").Result;
 
             if (!result.Canceled)
@@ -189,6 +191,7 @@
         try
         {
             basket = Context.Baskets.FirstOrDefault(x => x.UserId == CurrentElement.CurrentUser.Id && x.MealId == meal.Id);
+            Action.CurrentAction = false;
             var result = await DialogService.Show<ActionDialog>($"Вы уверены, что хотите удалить это блюдо из корзины?").Result;
 
             if (!result.Canceled)

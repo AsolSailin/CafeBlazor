@@ -2,11 +2,14 @@
 
 @using CafeBlazor.DataBase
 @using CafeBlazor.Services
+@using CafeBlazor.Components
 @inject CafeContext Context
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
+@inject IDialogService DialogService
 @inject FileSystemService FileSystemService
 @inject CurrentElementService CurrentElement
+@inject ActionDialogService Action
 
 <PageTitle>АККАУНТ</PageTitle>
 
@@ -74,6 +77,10 @@
                 <MudText Class="labelText">Пароль<span style="visibility: @visible"> *</span></MudText>
                 <input @bind-value="@password" readonly="@edit" />
             </div>
+            @if (CurrentElement.CurrentRole == "Клиент")
+            {
+                <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 20px; height: 50px; font-size: 16px; border: 3px solid #784421; color: #784421; margin-right: 20px" OnClick="@Delete">Удалить</MudButton>
+            }
             @if (edit)
             {
                 <MudButton Variant="Variant.Outlined" Style="border-radius: 10px; top: 20px; height: 50px; font-size: 16px; border: 3px solid #784421; color: #784421; margin-right: 20px" OnClick="@GetEdit">Изменить</MudButton>
@@ -173,5 +180,20 @@
         Snackbar.Add("Изменения аккаунта успешно сохранены!", Severity.Success, config => { config.ShowCloseIcon = false; });
         visible = "hidden";
         edit = true;
+    }
+
+    private async Task Delete()
+    {
+        Action.CurrentAction = false;
+        var result = await DialogService.Show<ActionDialog>($"Вы уверены, что хотите удалить этот аккаунт?").Result;
+
+        if (!result.Canceled)
+        {
+            CurrentElement.CurrentAccount.IsDeleted = true;
+            Context.Accounts.Update(CurrentElement.CurrentAccount);
+            Context.SaveChanges();
+            Snackbar.Add("Аккаунт успешно удален!", Severity.Success, config => { config.ShowCloseIcon = false; });
+            Navigation.NavigateTo("/authorization");
+        }
     }
 }

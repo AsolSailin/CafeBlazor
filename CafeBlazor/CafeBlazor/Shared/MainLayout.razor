@@ -1,6 +1,9 @@
 ﻿@inherits LayoutComponentBase
 @using CafeBlazor.Services
+@using CafeBlazor.Components
+@inject IDialogService DialogService
 @inject CurrentElementService CurrentElement
+@inject ActionDialogService Action
 @inject NavigationManager Navigation
 
 <PageTitle>CafeBlazor</PageTitle>
@@ -67,37 +70,45 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (_navMenu is not null)
+            _navMenu.Update = true;
         await base.OnAfterRenderAsync(firstRender);
     }
 
     private void GetAccount() => Navigation.NavigateTo("/account");
 
-    private void Exit()
+    private async Task Exit()
     {
-        CurrentElement.CurrentUser = null;
-        Navigation.NavigateTo("/authorization");
+        Action.CurrentAction = true;
+        var result = await DialogService.Show<ActionDialog>($"Вы уверены, что хотите выйти из аккаунта?").Result;
+
+        if (!result.Canceled)
+        {
+            CurrentElement.CurrentUser = null;
+            Navigation.NavigateTo("/authorization");
+        }
     }
 
     private readonly MudTheme _currentTheme = new()
+    {
+        Palette = new PaletteLight
         {
-            Palette = new PaletteLight
-            {
-                TextSecondary = "#784421",
-                TextPrimary = "#784421",
-                Primary = "#784421",
-                Black = "#000000",
-                White = "#FFFFFF",
-                Secondary = "#00FF00",
-                Tertiary = "#0000FF",
-                Success = "#d38d5f",
-                Info = "#FFFF00",
-                Warning = "#FF00FF",
-                Error = "#f57c7c",
-                Dark = "#333333",
-                Background = "#FFFFFF",
-                PrimaryDarken = "#784421"
-            }
-        };
+            TextSecondary = "#784421",
+            TextPrimary = "#784421",
+            Primary = "#784421",
+            Black = "#000000",
+            White = "#FFFFFF",
+            Secondary = "#00FF00",
+            Tertiary = "#0000FF",
+            Success = "#d38d5f",
+            Info = "#FFFF00",
+            Warning = "#FF00FF",
+            Error = "#f57c7c",
+            Dark = "#333333",
+            Background = "#FFFFFF",
+            PrimaryDarken = "#784421"
+        }
+    };
 
     void ToggleDrawer()
     {

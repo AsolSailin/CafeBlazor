@@ -68,7 +68,7 @@
             {
                 <MudTable Items="@orderList" T="Order" Hover="true" @bind-SelectedItem="selectedItem" OnRowClick="@GetOrder" Style="border: solid 1px #925831; border-radius: 5px;">
                     <RowTemplate>
-                        <MudTd DataLabel="Title" Style="font-size: 20px; margin-right: 0px">Заказ № @context.Id за @context.ReadyTime.ToString("g")</MudTd>
+                        <MudTd DataLabel="Title" Style="font-size: 20px; margin-right: 0px">Заказ № @context.Id за @context.ReadyTime.ToString("d")</MudTd>
                         <MudTd DataLabel="Title" Style="font-size: 20px;">на сумму: @context.PurchaseAmount</MudTd>
                         <MudTd DataLabel="Title" Style="font-size: 20px;">@GetStatus(context)</MudTd>
                     </RowTemplate>
@@ -103,7 +103,7 @@
         }
         else if (Context.Roles.FirstOrDefault(x => x.Id == CurrentElement.CurrentUser.RoleId).Title == "Клиент")
         {
-            orderList = Context.Orders.Where(x => x.UserId == CurrentElement.CurrentUser.Id).ToList();
+            orderList = Context.Orders.Where(x => x.UserId == CurrentElement.CurrentUser.Id && x.ReadyTime == date).ToList();
         }
     }
 

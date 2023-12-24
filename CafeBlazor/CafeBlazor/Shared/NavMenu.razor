@@ -1,6 +1,11 @@
-﻿<style>
+﻿@using CafeBlazor.Services
+@inject CurrentElementService CurrentElement
+
+<style>
     .text {
         color: #784421;
+        font-size: 17px;
+        margin-top: 5px;
     }
 </style>
 
@@ -11,12 +16,21 @@
     <MudNavLink Class="text" Href="/history">
         <span class="oi oi-list-rich" aria-hidden="true"></span> История заказов
     </MudNavLink>
-    <MudNavLink Class="text" Href="/basket">
-        <span class="oi oi-list-rich" aria-hidden="true"></span> Корзина
-    </MudNavLink>
+    @if (CurrentElement.CurrentRole == "Клиент")
+    {
+        <MudNavLink Class="text" Href="/basket">
+            <span class="oi oi-list-rich" aria-hidden="true"></span> Корзина
+        </MudNavLink>
+    }
 </MudNavMenu>
 
 @code {
+    public bool Update
+    {
+        get => true;
+        set => StateHasChanged();
+    }
+
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
